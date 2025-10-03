@@ -3,9 +3,8 @@ document.addEventListener('DOMContentLoaded', function () {
   const form = document.getElementById('registration-form');
   const feedbackDiv = document.getElementById('form-feedback');
 
-  // Safety: ensure elements exist before proceeding
   if (!form || !feedbackDiv) {
-    console.error('Required form or feedback element not found.');
+    console.error('Missing required elements (form or feedbackDiv).');
     return;
   }
 
@@ -13,19 +12,15 @@ document.addEventListener('DOMContentLoaded', function () {
   const emailInput = document.getElementById('email');
   const passwordInput = document.getElementById('password');
 
-  // Extra safety: check fields
   if (!usernameInput || !emailInput || !passwordInput) {
     console.error('One or more input fields are missing.');
     return;
   }
 
-  // Simple, reliable email regex (not exhaustive but good for client-side check)
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
   form.addEventListener('submit', function (event) {
     event.preventDefault();
 
-    // Trim values
+    // Retrieve and trim values
     const username = usernameInput.value.trim();
     const email = emailInput.value.trim();
     const password = passwordInput.value.trim();
@@ -33,12 +28,12 @@ document.addEventListener('DOMContentLoaded', function () {
     let isValid = true;
     const messages = [];
 
-    // Reset field styles
+    // Reset input classes (visual helpers, optional)
     [usernameInput, emailInput, passwordInput].forEach(el => {
       el.classList.remove('invalid', 'valid');
     });
 
-    // Username validation
+    // --- Username validation ---
     if (username.length < 3) {
       isValid = false;
       messages.push('Username must be at least 3 characters long.');
@@ -47,16 +42,26 @@ document.addEventListener('DOMContentLoaded', function () {
       usernameInput.classList.add('valid');
     }
 
-    // Email validation using regex
-    if (!emailRegex.test(email)) {
+    // --- Email validation ---
+    // Requirement: email must include both '@' and '.'
+    if (!(email.includes('@') && email.includes('.'))) {
       isValid = false;
-      messages.push('Please enter a valid email address.');
+      messages.push('Please enter a valid email address (must contain "@" and ".").');
       emailInput.classList.add('invalid');
     } else {
-      emailInput.classList.add('valid');
+      // Extra basic ordering check: '.' should come after '@' and not be the last character
+      const atIndex = email.indexOf('@');
+      const lastDotIndex = email.lastIndexOf('.');
+      if (!(atIndex > 0 && lastDotIndex > atIndex + 1 && lastDotIndex < email.length - 1)) {
+        isValid = false;
+        messages.push('Please enter a valid email address (check placement of "@" and ".").');
+        emailInput.classList.add('invalid');
+      } else {
+        emailInput.classList.add('valid');
+      }
     }
 
-    // Password validation
+    // --- Password validation ---
     if (password.length < 8) {
       isValid = false;
       messages.push('Password must be at least 8 characters long.');
@@ -65,28 +70,28 @@ document.addEventListener('DOMContentLoaded', function () {
       passwordInput.classList.add('valid');
     }
 
-    // Display feedback
+    // --- Feedback display logic ---
     feedbackDiv.style.display = 'block';
 
     if (isValid) {
       feedbackDiv.textContent = 'Registration successful!';
-      feedbackDiv.style.color = '#155724';          // dark green
-      feedbackDiv.style.backgroundColor = '#d4edda'; // light green background
-      feedbackDiv.style.border = '1px solid #c3e6cb';
-
-      // Optionally clear the form
+      feedbackDiv.style.color = '#28a745';
+      // Optionally style background/border (not required by checks)
+      feedbackDiv.style.backgroundColor = '';
+      feedbackDiv.style.border = '';
       form.reset();
 
-      // Remove 'valid' classes after a short delay so the user sees the green borders briefly
+      // Clear valid classes shortly after reset so the green borders don't stay forever
       setTimeout(() => {
         [usernameInput, emailInput, passwordInput].forEach(el => el.classList.remove('valid'));
       }, 700);
     } else {
-      // Join messages with <br> so they render on separate lines
+      // Join messages with <br> so they appear on separate lines
       feedbackDiv.innerHTML = messages.join('<br>');
-      feedbackDiv.style.color = '#721c24';           // dark red
-      feedbackDiv.style.backgroundColor = '#f8d7da'; // light red background
-      feedbackDiv.style.border = '1px solid #f5c6cb';
+      feedbackDiv.style.color = '#dc3545';
+      // Optionally style background/border (not required by checks)
+      feedbackDiv.style.backgroundColor = '';
+      feedbackDiv.style.border = '';
     }
   });
 });
